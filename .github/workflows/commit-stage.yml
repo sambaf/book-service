@@ -1,0 +1,59 @@
+# This workflow uses actions that are not certified by GitHub.
+# They are provided by a third-party and are governed by
+# separate terms of service, privacy policy, and support
+# documentation.
+
+# GitHub recommends pinning actions to a commit SHA.
+# To get a newer version, you will need to update the SHA.
+# You can also reference a tag or branch, but the action may change without warning.
+
+name: Create and publish a Docker image
+
+on: push
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: sambaf/book-service
+  VERSION: latest
+
+jobs:
+  build:
+    name: Build and Test
+    runs-on: ubuntu-22.04
+
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v3
+      - name: Set up JDK
+        uses: actions/setup-java@v3
+        with:
+          distribution: temurin
+          java-version: 17
+          cache: maven
+      - name: Build, unit tests and integration tests
+        run: ./mvnw clean install
+  
+  package:
+    name: Package and publish
+    if: ${{git.ref=='refs/head/main'}}
+    needs: [ build ]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      package: write
+      security-events: write
+    steps:
+      - name: check out source code
+        uses: actions/checkout@v3
+      - name: Set up JDK
+        uses: actions/setup-java@v3
+        with:
+          distribution: temurin
+          java-version: 17
+          cache: maven
+      - name: Build Container Image
+        run: |
+          chmod +x .mvnw 
+          ./mvnw spring-boot:build-image --imageName
+          ${{env.REGISTRY}}/${{env.IMAGE_NAME}}//:${{env.VERSION}}
+              

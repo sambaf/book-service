@@ -1,0 +1,23 @@
+version: "3.8"
+services:
+  book-service:
+    depends_on:
+      - db-service
+    image: book-service
+    container_name: book-service
+    ports:
+      - "8081:8080"
+      - "9001:9001"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db-service:5432/book-db
+      - SPRING_DATASOURCE_USERNAME=user
+      - SPRING_DATASOURCE_PASSWORD=password
+  db-service:
+    image: postgres:14.4
+    container_name: db-service
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=book-db
