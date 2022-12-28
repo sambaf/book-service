@@ -1,4 +1,14 @@
-name: Commit Stage
+# This workflow uses actions that are not certified by GitHub.
+# They are provided by a third-party and are governed by
+# separate terms of service, privacy policy, and support
+# documentation.
+
+# GitHub recommends pinning actions to a commit SHA.
+# To get a newer version, you will need to update the SHA.
+# You can also reference a tag or branch, but the action may change without warning.
+
+name: Create and publish a Docker image
+
 on: push
 
 env:
@@ -10,9 +20,6 @@ jobs:
   build:
     name: Build and Test
     runs-on: ubuntu-22.04
-    permissions:
-      contents: read
-      security-events: write
     steps:
       - name: Checkout source code
         uses: actions/checkout@v3
@@ -22,33 +29,33 @@ jobs:
           distribution: temurin
           java-version: 17
           cache: maven
-      - name: Build, unit tests and integration tests
-        run: |
+      - name: build, unit tests and integration tests
+        run: | 
           chmod +x mvnw
-          ./mvnw install
+         ./mvnw clean install
   package:
-    name: Package and Publish
-    if: ${{ github.ref == 'refs/heads/main' }}
+    name: Package and publish
+    if: ${{github.ref=='refs/head/main'}}
     needs: [ build ]
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     permissions:
       contents: read
-      packages: write
+      package: write
       security-events: write
     steps:
-      - name: Checkout source code
+      - name: check out source code
         uses: actions/checkout@v3
       - name: Set up JDK
         uses: actions/setup-java@v3
         with:
           distribution: temurin
           java-version: 17
-          cache: gradle
-      - name: Build container image
+          cache: maven
+      - name: Build Container Image
         run: |
-          chmod +x mvnw
+          chmod +x .mvnw 
           ./mvnw spring-boot:build-image \
-            --imageName ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.VERSION }}
+          --imageName  ${{env.REGISTRY}}/${{env.IMAGE_NAME}}//:${{env.VERSION}}
       - name: Log into container registry
         uses: docker/login-action@v2
         with:
@@ -57,3 +64,4 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Publish container image
         run: docker push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.VERSION }}
+              
