@@ -28,8 +28,7 @@ jobs:
         with:
           distribution: temurin
           java-version: 17
-          cache: 'maven'
-      - name: Build, unit tests and integration tests
+      - name: build, unit tests and integration tests
         run: | 
           chmod +x mvnw
          ./mvnw clean install
