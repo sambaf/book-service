@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    db: book-postgres
+  name: book-postgres
+spec:
+  selector:
+    matchLabels:
+     db: book-postgres
+  template:
+    metadata:
+      labels:
+       db: book-postgres
+    spec:
+      containers:
+      - image: postgres:14.4
+        name: postgres
+        env:
+          - name: POSTGRES_USER
+            value: user
+          - name: POSTGRES_PASSWORD
+            value: password
+          - name: POSTGRES_DB
+            value: book-db
+
+        resources:
+          requests:
+            cpu: 100m
+            memory: 60Mi
+          limits:
+            cpu: 200m
+            memory: 120Mi
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: book-postgres
+  labels:
+    db: book-postgres
+spec:
+  type: ClusterIP
+  selector:
+    db: book-postgres
+  ports:
+    - protocol: TCP
+      port: 5432
+      targetPort: 5432
